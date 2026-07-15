@@ -1,65 +1,151 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { db } from "@/lib/db";
+import { CompactHero } from "@/components/home/compact-hero";
+import { CategoryTiles } from "@/components/home/category-tiles";
+import { WhyVolt } from "@/components/home/why-volt";
+import { CompatibilityCta } from "@/components/home/compatibility-cta";
+import { ReviewsSection } from "@/components/home/reviews-section";
+import { KnowledgeCards } from "@/components/home/knowledge-cards";
+import { NewsletterSection } from "@/components/home/newsletter-section";
+import { ProductCard, type ProductCardProps } from "@/components/product/product-card";
 
-export default function Home() {
+interface HeroSettings {
+  headline: string;
+  subtitle: string;
+  ctaLabel: string;
+}
+
+export default async function HomePage() {
+  const [heroSetting, heroProduct, products, categoriesRaw, brands, approvedReviews, posts] = await Promise.all([
+    db.adminSetting.findUnique({ where: { key: "homepage_hero" } }),
+    db.product.findFirst({
+      where: { slug: "volt-air-33w-gan-adapteri" },
+      include: { images: { orderBy: { position: "asc" }, take: 1 } },
+    }),
+    db.product.findMany({
+      where: { status: "ACTIVE" },
+      include: { images: { orderBy: { position: "asc" }, take: 1 } },
+      orderBy: [{ featured: "desc" }, { createdAt: "asc" }],
+      take: 8,
+    }),
+    db.category.findMany({ orderBy: { order: "asc" }, include: { _count: { select: { products: true } } } }),
+    db.phoneBrand.findMany({ orderBy: { order: "asc" }, select: { id: true, slug: true, name: true } }),
+    db.review.findMany({
+      where: { status: "APPROVED" },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      include: { product: { select: { name: true } } },
+    }),
+    db.blogPost.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: { publishedAt: "desc" },
+      take: 3,
+      select: { slug: true, title: true, excerpt: true },
+    }),
+  ]);
+
+  const hero = (heroSetting?.value as unknown as HeroSettings) ?? {
+    headline: "Telefonunuz üçün düzgün adapteri seçin.",
+    subtitle: "Sürətli, təhlükəsiz və orijinal şarj həlləri — Bakıda çatdırılma ilə.",
+    ctaLabel: "Məhsullara bax",
+  };
+
+  const reviewStats = await db.review.groupBy({
+    by: ["productId"],
+    where: { status: "APPROVED", productId: { in: products.map((p) => p.id) } },
+    _avg: { rating: true },
+    _count: { rating: true },
+  });
+  const reviewMap = new Map(reviewStats.map((r) => [r.productId, r]));
+
+  function toCardProps(product: (typeof products)[number]): ProductCardProps {
+    const stats = reviewMap.get(product.id);
+    return {
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      price: Number(product.price),
+      compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
+      wattage: product.wattage,
+      connectorType: product.connectorType,
+      stock: product.stock,
+      isDemo: product.isDemo,
+      imageId: product.images[0]?.id ?? null,
+      rating: stats?._avg.rating ?? null,
+      reviewCount: stats?._count.rating ?? 0,
+    };
+  }
+
+  const categories = categoriesRaw.map((c) => ({ slug: c.slug, name: c.name, productCount: c._count.products }));
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Volt",
+            url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+            description: "Azərbaycanda premium telefon adapterləri və şarj aksesuarları brendi.",
+          }),
+        }}
+      />
+
+      <CompactHero
+        headline={hero.headline}
+        subtitle={hero.subtitle}
+        ctaLabel={hero.ctaLabel}
+        product={
+          heroProduct
+            ? { slug: heroProduct.slug, wattage: heroProduct.wattage, imageId: heroProduct.images[0]?.id ?? null }
+            : null
+        }
+      />
+
+      {products.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between gap-4">
+            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Məhsullar</h2>
+            <Link
+              href="/shop"
+              className="hidden shrink-0 items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:flex"
+            >
+              Hamısına bax <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+            {products.map((product) => (
+              <ProductCard key={product.id} {...toCardProps(product)} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <CategoryTiles categories={categories} />
+
+      <WhyVolt />
+
+      <CompatibilityCta brands={brands} />
+
+      {approvedReviews.length >= 3 && (
+        <ReviewsSection
+          reviews={approvedReviews.map((r) => ({
+            id: r.id,
+            authorName: r.authorName,
+            rating: r.rating,
+            title: r.title,
+            body: r.body,
+            createdAt: r.createdAt,
+            productName: r.product.name,
+          }))}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      )}
+
+      <KnowledgeCards posts={posts} />
+      <NewsletterSection />
+    </>
   );
 }

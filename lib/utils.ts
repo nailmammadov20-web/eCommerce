@@ -42,6 +42,21 @@ export function slugify(value: string) {
     .replace(/(^-|-$)+/g, "")
 }
 
+const DEFAULT_SITE_URL = "http://localhost:3000"
+
+// NEXT_PUBLIC_SITE_URL is admin/deploy-configured, so a typo or unset var
+// shouldn't be able to crash the whole build (new URL() throws on anything
+// invalid) — validate it and fall back safely instead.
+export function getSiteUrl() {
+  const value = process.env.NEXT_PUBLIC_SITE_URL
+  if (!value) return DEFAULT_SITE_URL
+  try {
+    return new URL(value).toString().replace(/\/$/, "")
+  } catch {
+    return DEFAULT_SITE_URL
+  }
+}
+
 export function generateOrderNumber() {
   const date = new Date()
   const y = date.getFullYear().toString().slice(-2)

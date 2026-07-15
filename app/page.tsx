@@ -9,6 +9,7 @@ import { ReviewsSection } from "@/components/home/reviews-section";
 import { KnowledgeCards } from "@/components/home/knowledge-cards";
 import { NewsletterSection } from "@/components/home/newsletter-section";
 import { ProductCard, type ProductCardProps } from "@/components/product/product-card";
+import { getSiteUrl } from "@/lib/utils";
 
 interface HeroSettings {
   headline: string;
@@ -88,7 +89,7 @@ export default async function HomePage() {
             "@context": "https://schema.org",
             "@type": "Organization",
             name: "Volt",
-            url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+            url: getSiteUrl(),
             description: "Azərbaycanda premium telefon adapterləri və şarj aksesuarları brendi.",
           }),
         }}

@@ -18,15 +18,11 @@ export function StickyGallery({ images, productName, wattage }: StickyGalleryPro
   const [active, setActive] = useState(0);
 
   if (images.length === 0) {
-    return (
-      <div className="lg:sticky lg:top-24">
-        <ProductVisual imageAlt={productName} wattage={wattage} className="aspect-square w-full" />
-      </div>
-    );
+    return <ProductVisual imageAlt={productName} wattage={wattage} className="aspect-square w-full" />;
   }
 
   return (
-    <div className="lg:sticky lg:top-24">
+    <div>
       <ProductVisual imageId={images[active].id} imageAlt={images[active].alt} wattage={wattage} className="aspect-square w-full" />
       {images.length > 1 && (
         <div className="mt-4 flex gap-3">

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Zap, Cable, Clock, ArrowRight } from "lucide-react";
+import { Zap, Cable, Clock, ArrowRight, Smartphone, Layers } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { formatPrice, cn } from "@/lib/utils";
@@ -38,6 +38,19 @@ function scoreColor(score: number) {
   return "text-destructive";
 }
 
+function StepBadge({ active, done, children }: { active: boolean; done: boolean; children: React.ReactNode }) {
+  return (
+    <span
+      className={cn(
+        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold",
+        done || active ? "bg-electric text-electric-foreground" : "bg-secondary text-muted-foreground",
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
 export function CompatibilityCheckerClient({
   brands,
   rules,
@@ -57,44 +70,64 @@ export function CompatibilityCheckerClient({
 
   return (
     <div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Select
-          items={brands.map((brand) => ({ value: brand.id, label: brand.name }))}
-          value={brandId ?? undefined}
-          onValueChange={(value) => {
-            setBrandId(value as string);
-            setModelId(null);
-          }}
-        >
-          <SelectTrigger className="h-12 w-full rounded-xl">
-            <SelectValue placeholder="Marka seçin" />
-          </SelectTrigger>
-          <SelectContent>
-            {brands.map((brand) => (
-              <SelectItem key={brand.id} value={brand.id}>
-                {brand.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="rounded-3xl border border-border bg-secondary/20 p-6 sm:p-8">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <StepBadge active done={!!brandId}>1</StepBadge>
+              Marka
+            </label>
+            <Select
+              items={brands.map((brand) => ({ value: brand.id, label: brand.name }))}
+              value={brandId ?? undefined}
+              onValueChange={(value) => {
+                setBrandId(value as string);
+                setModelId(null);
+              }}
+            >
+              <SelectTrigger className="mt-2 h-12 w-full rounded-xl bg-background">
+                <Smartphone className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
+                <SelectValue placeholder="Marka seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                {brands.map((brand) => (
+                  <SelectItem key={brand.id} value={brand.id}>
+                    {brand.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <Select
-          items={(selectedBrand?.models ?? []).map((model) => ({ value: model.id, label: model.name }))}
-          value={modelId ?? undefined}
-          onValueChange={(value) => setModelId(value as string)}
-          disabled={!selectedBrand}
-        >
-          <SelectTrigger className="h-12 w-full rounded-xl">
-            <SelectValue placeholder="Model seçin" />
-          </SelectTrigger>
-          <SelectContent>
-            {selectedBrand?.models.map((model) => (
-              <SelectItem key={model.id} value={model.id}>
-                {model.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <StepBadge active={!!selectedBrand} done={!!modelId}>2</StepBadge>
+              Model
+            </label>
+            <Select
+              items={(selectedBrand?.models ?? []).map((model) => ({ value: model.id, label: model.name }))}
+              value={modelId ?? undefined}
+              onValueChange={(value) => setModelId(value as string)}
+              disabled={!selectedBrand}
+            >
+              <SelectTrigger className="mt-2 h-12 w-full rounded-xl bg-background">
+                <Layers className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
+                <SelectValue placeholder="Model seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                {selectedBrand?.models.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    {model.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          {brands.length} marka · {brands.reduce((sum, b) => sum + b.models.length, 0)}+ model dəstəklənir
+        </p>
       </div>
 
       {rule && (

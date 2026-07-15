@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { MessageSquare, Star } from "lucide-react";
 import { ReviewForm } from "@/components/product/review-form";
 import { formatDate, cn } from "@/lib/utils";
 
@@ -33,9 +33,15 @@ export function ReviewsSection({ productSlug, reviews }: { productSlug: string; 
             </span>
           </div>
         ) : (
-          <p className="mt-3 text-sm text-muted-foreground">
-            Bu məhsul üçün hələ rəy yoxdur. İlk rəyi siz yazın.
-          </p>
+          <div className="mt-6 flex flex-col items-start rounded-2xl border border-dashed border-border p-6">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary">
+              <MessageSquare className="h-5 w-5 text-electric" strokeWidth={1.5} />
+            </div>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Bu məhsul üçün hələ rəy yoxdur. Onu sınayan ilk müştəri siz olsanız, təcrübənizi bölüşün — digər
+              alıcılara kömək edər.
+            </p>
+          </div>
         )}
 
         <div className="mt-8 space-y-6">

@@ -1,15 +1,6 @@
 import Link from "next/link";
-import { Zap, PlugZap, Cable, Car, Radio, BatteryCharging, type LucideIcon } from "lucide-react";
-
-const iconMap: Record<string, LucideIcon> = {
-  "gan-adapterler": Zap,
-  "usb-c-adapterler": PlugZap,
-  "lightning-kabeller": Cable,
-  kabeller: Cable,
-  "car-chargers": Car,
-  "wireless-chargers": Radio,
-  "power-banks": BatteryCharging,
-};
+import { Zap } from "lucide-react";
+import { categoryIcons } from "@/lib/category-icons";
 
 interface CategoryTilesProps {
   categories: { slug: string; name: string; productCount: number }[];
@@ -24,7 +15,7 @@ export function CategoryTiles({ categories }: CategoryTilesProps) {
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {categories.map((category) => {
-          const Icon = iconMap[category.slug] ?? Zap;
+          const Icon = categoryIcons[category.slug] ?? Zap;
           return (
             <Link
               key={category.slug}

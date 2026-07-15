@@ -96,9 +96,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         }}
       />
 
-      <div className="grid gap-10 lg:grid-cols-[0.9fr_1.2fr_0.9fr] lg:gap-8">
-        {/* Description column — text-first, reads left on desktop, third on mobile */}
-        <div className="order-3 lg:order-1">
+      <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+        {/* Description column — text-first, reads left on desktop, second on mobile */}
+        <div className="order-2 lg:order-1">
           <p className="text-sm font-medium tracking-wide text-electric uppercase">{product.category.name}</p>
           <h1 className="mt-2 text-3xl leading-tight font-semibold tracking-tight">{product.name}</h1>
           <p className="mt-4 text-muted-foreground">{product.shortDescription}</p>
@@ -194,17 +194,14 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </Accordion>
         </div>
 
-        {/* Gallery — always shown first on mobile, centered on desktop */}
-        <div className="order-1 lg:order-2">
+        {/* Gallery + buy panel travel together as one sticky unit on desktop */}
+        <div className="order-1 space-y-8 lg:order-2 lg:sticky lg:top-24 lg:self-start">
           <StickyGallery
             images={product.images.map((img) => ({ id: img.id, alt: img.alt }))}
             productName={product.name}
             wattage={product.wattage}
           />
-        </div>
 
-        {/* Buy panel — price, variant, favorite, add to cart */}
-        <div className="order-2 lg:order-3">
           <AddToCartPanel
             productId={product.id}
             slug={product.slug}

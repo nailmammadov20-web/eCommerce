@@ -36,9 +36,21 @@ export function ProductVisual({ imageId, imageAlt, wattage, className }: Product
       )}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(70,110,255,0.35),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:32px_32px]" />
+
+      {wattage ? (
+        <span
+          aria-hidden
+          className="absolute inset-x-0 bottom-2 select-none text-center text-[7rem] leading-none font-bold text-white/[0.06] sm:text-[9rem]"
+        >
+          {wattage}W
+        </span>
+      ) : null}
+
       <div className="relative flex h-24 w-24 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/10 backdrop-blur-sm sm:h-28 sm:w-28">
         <Zap className="h-11 w-11 text-electric" strokeWidth={1.25} />
       </div>
+
       {wattage ? (
         <span className="absolute right-4 bottom-4 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/80 ring-1 ring-white/10 backdrop-blur-sm">
           {wattage}W

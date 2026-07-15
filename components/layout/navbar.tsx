@@ -1,14 +1,18 @@
 import Link from "next/link";
-import { User, Search, ChevronDown } from "lucide-react";
+import { User, Search, ChevronDown, ArrowRight, Grid3x3 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { categoryIcons } from "@/lib/category-icons";
 import { CartButton } from "@/components/layout/cart-button";
 import { WishlistButton } from "@/components/layout/wishlist-button";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -23,7 +27,10 @@ const secondaryLinks = [
 ];
 
 export async function Navbar() {
-  const [session, categories] = await Promise.all([auth(), db.category.findMany({ orderBy: { order: "asc" } })]);
+  const [session, categories] = await Promise.all([
+    auth(),
+    db.category.findMany({ orderBy: { order: "asc" }, include: { _count: { select: { products: true } } } }),
+  ]);
 
   const allLinks = [{ href: "/shop", label: "Mağaza" }, ...links, ...secondaryLinks];
 
@@ -39,12 +46,33 @@ export async function Navbar() {
             Kateqoriyalar
             <ChevronDown className="h-3.5 w-3.5" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
-            {categories.map((category) => (
-              <DropdownMenuItem key={category.id} render={<Link href={`/shop?category=${category.slug}`} />}>
-                {category.name}
-              </DropdownMenuItem>
-            ))}
+          <DropdownMenuContent align="start" className="w-64 p-2">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase">
+                Kateqoriyalar
+              </DropdownMenuLabel>
+              {categories.map((category) => {
+                const Icon = categoryIcons[category.slug] ?? Grid3x3;
+                return (
+                  <DropdownMenuItem
+                    key={category.id}
+                    render={<Link href={`/shop?category=${category.slug}`} />}
+                    className="gap-3 rounded-lg px-2 py-2.5"
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                      <Icon className="h-4 w-4 text-electric" strokeWidth={1.5} />
+                    </div>
+                    <span className="flex-1 text-sm">{category.name}</span>
+                    <span className="text-xs text-muted-foreground">{category._count.products}</span>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem render={<Link href="/shop" />} className="justify-between rounded-lg px-2 py-2.5">
+              <span className="text-sm font-medium">Bütün məhsullar</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 

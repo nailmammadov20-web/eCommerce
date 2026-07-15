@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { LayoutDashboard, Package, ShieldCheck, LogOut } from "lucide-react";
 import { requireUser } from "@/lib/session";
@@ -16,6 +17,7 @@ const links = [
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();
+  if (user.role === "ADMIN") redirect("/admin");
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">

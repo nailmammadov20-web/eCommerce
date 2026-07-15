@@ -71,13 +71,18 @@ export async function Navbar() {
           <WishlistButton />
           <CartButton />
           <Link
-            href={session?.user ? "/account" : "/login"}
+            href={session?.user ? (session.user.role === "ADMIN" ? "/admin" : "/account") : "/login"}
             aria-label={session?.user ? "Hesabım" : "Daxil ol"}
             className="hidden h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-accent md:inline-flex"
           >
             <User className="h-5 w-5" strokeWidth={1.5} />
           </Link>
-          <MobileNav links={allLinks} categories={categories} isAuthed={!!session?.user} />
+          <MobileNav
+            links={allLinks}
+            categories={categories}
+            isAuthed={!!session?.user}
+            isAdmin={session?.user?.role === "ADMIN"}
+          />
         </div>
       </div>
     </header>

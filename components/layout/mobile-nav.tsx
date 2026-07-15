@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, User, Heart, Search } from "lucide-react";
+import { Menu, User, Heart, Search, LayoutDashboard } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
@@ -20,10 +20,12 @@ export function MobileNav({
   links,
   categories,
   isAuthed,
+  isAdmin = false,
 }: {
   links: NavLink[];
   categories: CategoryLink[];
   isAuthed: boolean;
+  isAdmin?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -85,6 +87,19 @@ export function MobileNav({
           )}
 
           <div className="my-2 h-px bg-border" />
+          {isAdmin && (
+            <SheetClose
+              render={
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-2 rounded-md px-3 py-3 text-base font-medium text-electric transition-colors hover:bg-accent"
+                />
+              }
+            >
+              <LayoutDashboard className="h-4 w-4" strokeWidth={1.5} />
+              Admin paneli
+            </SheetClose>
+          )}
           <SheetClose
             render={
               <Link
@@ -99,7 +114,7 @@ export function MobileNav({
           <SheetClose
             render={
               <Link
-                href={isAuthed ? "/account" : "/login"}
+                href={isAuthed ? (isAdmin ? "/admin" : "/account") : "/login"}
                 className="flex items-center gap-2 rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-accent"
               />
             }

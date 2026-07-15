@@ -20,11 +20,13 @@ export async function authenticate(_prevState: string | undefined, formData: For
     return parsed.error.issues[0]?.message ?? "Məlumatları yoxlayın.";
   }
 
+  const existingUser = await db.user.findUnique({ where: { email: parsed.data.email }, select: { role: true } });
+
   try {
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: "/account",
+      redirectTo: existingUser?.role === "ADMIN" ? "/admin" : "/account",
     });
   } catch (error) {
     if (error instanceof AuthError) {
